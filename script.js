@@ -19,6 +19,8 @@ getAndSetCategories()
 
     categoriesContainer.innerHTML = "";
 
+    
+
     categories.forEach((category) => {
       const list = document.createElement("li");
 
