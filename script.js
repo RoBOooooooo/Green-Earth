@@ -33,14 +33,14 @@ getAndSetCategories()
         categoriesContainer.innerHTML = "";
 
         const allCategoriesElement = document.createElement("li");
-        allCategoriesElement.innerHTML = `<button class="category btn btn-sm btn-ghost bg-green-700 text-white w-full justify-start" aria-label="All Trees">All Trees</button>`;
+        allCategoriesElement.innerHTML = `<button class="category btn btn-sm btn-ghost bg-green-700 text-white w-full justify-start whitespace-nowrap" aria-label="All Trees">All Trees</button>`;
         categoriesContainer.appendChild(allCategoriesElement);
         allCategoriesElement.onclick = handleCategoryChange;
 
         categories.forEach((category) => {
             const ctg = document.createElement("li");
 
-            ctg.innerHTML = `<button class="category btn btn-sm btn-ghost w-full justify-start" aria-label="${category?.category_name}">${category?.category_name}</button>`;
+            ctg.innerHTML = `<button class="category btn btn-sm btn-ghost w-full justify-start whitespace-nowrap" aria-label="${category?.category_name}">${category?.category_name}</button>`;
             ctg.onclick = handleCategoryChange;
 
             categoriesContainer.appendChild(ctg);
