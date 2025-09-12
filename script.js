@@ -1,12 +1,20 @@
 const treesContainer = document.querySelector(".trees-container");
 const loader = document.querySelector(".loader");
 
-// Categories
+// Category
 const categoriesContainer = document.querySelector(".categories-container");
+
+// Cart
+const cartContainer = document.querySelector(".cart-container");
+const totalPriceElement = document.querySelector(".total-price");
+
+// Modal
+const modalBox = document.querySelector(".modal-box");
 
 let categories = [];
 let activeCategory = "All Trees";
 let trees = [];
+let cart = [];
 
 const getAndSetCategories = async () => {
     const res = await fetch(
@@ -69,8 +77,8 @@ const shiftTrees = () => {
     const id =
         categories.map((ctg) => ctg.category_name).indexOf(activeCategory) + 1;
     treesContainer.innerHTML = "";
-    // loader.classList.add("flex");
-    // loader.classList.remove("hidden");
+    loader.classList.add("flex");
+    loader.classList.remove("hidden");
 
     const getCategoryTrees = async () => {
         const res = await fetch(
@@ -87,7 +95,7 @@ const shiftTrees = () => {
     getCategoryTrees()
         .then((result) => {
             trees = result;
-  
+
             trees.forEach((tree) => {
                 const treeCard = document.createElement("div");
                 treeCard.setAttribute("class", "card bg-white shadow-md");
@@ -95,20 +103,20 @@ const shiftTrees = () => {
                 treeCard.innerHTML = `
               <figure class="h-40 bg-gray-100 flex items-center justify-center">
                 <span class="text-gray-400">
-                <img src="${tree.image}" /></span>
+                <img src="${tree.image}" class="image" /></span>
               </figure>
               <div class="card-body">
-                <h3 class="font-bold">${tree.name}</h3>
-                <p class="text-sm text-gray-600">
+                <h3 class="title font-bold cursor-pointer" onclick="handleModalShow(event)">${tree.name}</h3>
+                <p class="description text-sm text-gray-600">
                   ${tree.description}
                 </p>
                 <div class="flex justify-between items-center mt-2">
-                  <span class="badge badge-outline text-green-600"
+                  <span class="category badge badge-outline text-green-600"
                     >${tree.category}</span
                   >
-                  <span class="font-semibold">৳${tree.price}</span>
+                  <span class="price font-semibold">৳${tree.price}</span>
                 </div>
-                <button class="btn bg-green-700 text-white mt-3 rounded-full">
+                <button class="btn bg-green-700 text-white mt-3 rounded-full" onclick="handleAddToCart(event)">
                   Add to Cart
                 </button>
               </div>
@@ -117,8 +125,8 @@ const shiftTrees = () => {
                 treesContainer.appendChild(treeCard);
             });
 
-            // loader.classList.add("hidden");
-            // loader.classList.remove("flex");
+            loader.classList.add("hidden");
+            loader.classList.remove("flex");
         })
         .catch(() => {
             console.log(`Error fetching ${activeCategory} category trees`);
@@ -147,20 +155,20 @@ getAllTrees()
             treeCard.innerHTML = `
               <figure class="h-40 bg-gray-100 flex items-center justify-center">
                 <span class="text-gray-400">
-                <img src="${tree.image}" /></span>
+                <img src="${tree.image}" class="image"/></span>
               </figure>
               <div class="card-body">
-                <h3 class="font-bold">${tree.name}</h3>
-                <p class="text-sm text-gray-600">
+                <h3 class="title font-bold cursor-pointer" onclick="handleModalShow(event)">${tree.name}</h3>
+                <p class="description text-sm text-gray-600">
                   ${tree.description}
                 </p>
                 <div class="flex justify-between items-center mt-2">
-                  <span class="badge badge-outline text-green-600"
+                  <span class="category badge badge-outline text-green-600"
                     >${tree.category}</span
                   >
-                  <span class="font-semibold">৳${tree.price}</span>
+                  <span class="price font-semibold">৳${tree.price}</span>
                 </div>
-                <button class="btn bg-green-700 text-white mt-3 rounded-full">
+                <button class="btn bg-green-700 text-white mt-3 rounded-full" onclick="handleAddToCart(event)">
                   Add to Cart
                 </button>
               </div>
@@ -172,3 +180,72 @@ getAllTrees()
     .catch(() => {
         console.log("Error fetching all trees");
     });
+
+// Add to Cart
+const handleAddToCart = (e) => {
+    const card = e.srcElement.parentElement;
+    const title = card.querySelector(".title");
+    const price = card.querySelector(".price");
+
+    if (!card && !title && !price) return;
+
+    const itemObj = {
+        title: title.innerText,
+        price: parseFloat(price.innerText.split("৳")[1]),
+        quantity: 1,
+    };
+
+    const cartItem = document.createElement("li");
+    cartItem.setAttribute("class", "flex justify-between items-center");
+    cartItem.innerHTML = `<span>${itemObj.title}
+                              <span class="text-sm text-gray-500">৳${itemObj.price} × ${itemObj.quantity}</span>
+                          </span>
+                          <button class="text-red-500 cursor-pointer" onclick="handleRemoveFromCart(event)">✕</button>`;
+    itemObj.element = cartItem;
+    cart.push(itemObj);
+    cartContainer.appendChild(cartItem);
+    handleCartTotal();
+    window.alert(`${title.innerText} has been added to cart`);
+};
+
+// Remove from Cart
+const handleRemoveFromCart = (e) => {
+    const card = e.srcElement.parentElement;
+    cart = cart.filter((item) => {
+        return item.element !== card;
+    });
+
+    handleCartTotal();
+    cartContainer.removeChild(card);
+};
+
+// Total Cart Update
+const handleCartTotal = () => {
+    const totalPrice = cart.reduce((acc, curr) => acc + curr.price, 0);
+    totalPriceElement.innerHTML = `৳${totalPrice}`;
+};
+
+// Card Modal Functionality
+const handleModalShow = (e) => {
+    const card = e.srcElement.parentElement.parentElement;
+    const image = card.querySelector(".image").src;
+    const category = card.querySelector(".category").innerText;
+    const title = card.querySelector(".title").innerText;
+    const price = card.querySelector(".price").innerText;
+    const description = card.querySelector(".description").innerText;
+
+    modalBox.innerHTML = `<h2 class="text-xl font-bold">${title}</h2>
+                        <img src="${image}" class="w-full max-h-[300px] rounded-md my-5 object-cover" />
+                        <ul class="space-y-2">
+                          <li class="font-bold">Category: <span class="font-normal">${category}</span></li>
+                          <li class="font-bold">Price: <span class="font-normal">${price}</span></li>
+                          <li class="font-bold">Description: <span class="font-normal">${description}</span></li>
+                        </ul>
+                        <div class="modal-action">
+                            <form method="dialog">
+                                <button class="btn">Close</button>
+                            </form>
+                        </div>`;
+
+    my_modal_1.showModal();
+};
